@@ -13,73 +13,76 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="NewFilter1">
+      <UniqueIdentifier>{5de36394-b22d-4f57-9846-7c9f21e28b0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="KeyFix.h">
+    <ClInclude Include="Source\KeyFix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyFixDlg.h">
+    <ClInclude Include="Source\KeyFixDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="framework.h">
+    <ClInclude Include="Source\framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="Source\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="Source\Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="Source\pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardLayouts.h">
+    <ClInclude Include="Source\KeyboardLayouts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LayoutInfo.h">
+    <ClInclude Include="Source\LayoutInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Clipboard.h">
+    <ClInclude Include="Source\Clipboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ActionOptions.h">
+    <ClInclude Include="Source\ActionOptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SettingsDlg.h">
+    <ClInclude Include="Source\SettingsDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AboutDlg.h">
+    <ClInclude Include="Source\AboutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="KeyFix.cpp">
+    <ClCompile Include="Source\KeyFix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyFixDlg.cpp">
+    <ClCompile Include="Source\KeyFixDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="Source\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardLayouts.cpp">
+    <ClCompile Include="Source\KeyboardLayouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Clipboard.cpp">
+    <ClCompile Include="Source\Clipboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ActionOptions.cpp">
+    <ClCompile Include="Source\ActionOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SettingsDlg.cpp">
+    <ClCompile Include="Source\SettingsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AboutDlg.cpp">
+    <ClCompile Include="Source\AboutDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KeyFix.rc">
+    <ResourceCompile Include="Source\KeyFix.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

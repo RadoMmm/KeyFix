@@ -193,36 +193,36 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ActionOptions.h" />
-    <ClInclude Include="Clipboard.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="AboutDlg.h" />
-    <ClInclude Include="KeyFix.h" />
-    <ClInclude Include="KeyFixDlg.h" />
-    <ClInclude Include="LayoutInfo.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="SettingsDlg.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="KeyboardLayouts.h" />
+    <ClInclude Include="Source\ActionOptions.h" />
+    <ClInclude Include="Source\Clipboard.h" />
+    <ClInclude Include="Source\framework.h" />
+    <ClInclude Include="Source\AboutDlg.h" />
+    <ClInclude Include="Source\KeyFix.h" />
+    <ClInclude Include="Source\KeyFixDlg.h" />
+    <ClInclude Include="Source\LayoutInfo.h" />
+    <ClInclude Include="Source\pch.h" />
+    <ClInclude Include="Source\Resource.h" />
+    <ClInclude Include="Source\SettingsDlg.h" />
+    <ClInclude Include="Source\targetver.h" />
+    <ClInclude Include="Source\KeyboardLayouts.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AboutDlg.cpp" />
-    <ClCompile Include="ActionOptions.cpp" />
-    <ClCompile Include="Clipboard.cpp" />
-    <ClCompile Include="KeyFix.cpp" />
-    <ClCompile Include="KeyFixDlg.cpp" />
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="Source\AboutDlg.cpp" />
+    <ClCompile Include="Source\ActionOptions.cpp" />
+    <ClCompile Include="Source\Clipboard.cpp" />
+    <ClCompile Include="Source\KeyFix.cpp" />
+    <ClCompile Include="Source\KeyFixDlg.cpp" />
+    <ClCompile Include="Source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="KeyboardLayouts.cpp" />
-    <ClCompile Include="SettingsDlg.cpp" />
+    <ClCompile Include="Source\KeyboardLayouts.cpp" />
+    <ClCompile Include="Source\SettingsDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="KeyFix.rc" />
+    <ResourceCompile Include="Source\KeyFix.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KeyFix.sln.licenseheader" />
