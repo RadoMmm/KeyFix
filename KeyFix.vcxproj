@@ -193,6 +193,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\CaretTipOptions.h" />
+    <ClInclude Include="Source\TipWnd.h" />
     <ClInclude Include="Source\ActionOptions.h" />
     <ClInclude Include="Source\Clipboard.h" />
     <ClInclude Include="Source\framework.h" />
@@ -207,6 +209,8 @@
     <ClInclude Include="Source\KeyboardLayouts.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\CaretTipOptions.cpp" />
+    <ClCompile Include="Source\TipWnd.cpp" />
     <ClCompile Include="Source\AboutDlg.cpp" />
     <ClCompile Include="Source\ActionOptions.cpp" />
     <ClCompile Include="Source\Clipboard.cpp" />

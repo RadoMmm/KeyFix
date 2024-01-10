@@ -31,6 +31,8 @@ SOFTWARE
 #include "resource.h"
 #include <ranges>
 
+#include <afxcolordialog.h>
+
 using namespace std;
 
 // CSettingsDlg dialog
@@ -55,11 +57,17 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_HOTKEY_OPEN, c_hotkeyOpen);
 	DDX_Check(pDX, IDC_AUTO_START, m_autoStart);
 	DDX_Control(pDX, IDC_HOTKEY_CAPS_LOCK, c_hotkeyCapsLock);
+	DDX_Control(pDX, IDC_LANGUAGE, c_language);
+	DDX_Control(pDX, IDC_SHOW_CARET_TIP, c_showLanguageTip);
 }
 
 
 BEGIN_MESSAGE_MAP(CSettingsDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CSettingsDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDC_SHOW_CARET_TIP, &CSettingsDlg::OnBnClickedShowCaretTip)
+	ON_BN_CLICKED(IDC_TIP_BK_COLOR, &CSettingsDlg::OnBnClickedTipBkColor)
+	ON_BN_CLICKED(IDC_TIP_TEXT_COLOR, &CSettingsDlg::OnBnClickedTipTextColor)
+	ON_CBN_SELCHANGE(IDC_LANGUAGE, &CSettingsDlg::OnCbnSelchangeLanguage)
 END_MESSAGE_MAP()
 
 
@@ -85,6 +93,12 @@ BOOL CSettingsDlg::OnInitDialog()
 			break;
 		}
 	}
+
+	for (auto& lngTip : m_caretTips)
+		c_language.AddString(CString(lngTip.first.c_str()));
+
+	c_language.SetCurSel(0);
+	OnCbnSelchangeLanguage();
 
 	return TRUE;  // return TRUE unless you set the focus to a control	
 }
@@ -129,4 +143,38 @@ void CSettingsDlg::OnBnClickedOk()
 
 
 	CDialogEx::OnOK();
+}
+
+
+void CSettingsDlg::OnBnClickedShowCaretTip()
+{
+	TipOptions().ShowTip = c_showLanguageTip.GetCheck() == BST_CHECKED;
+}
+
+
+void CSettingsDlg::OnBnClickedTipBkColor()
+{
+	CMFCColorDialog dlg(TipOptions().BkColor, 0, this);
+	if (IDOK == dlg.DoModal())
+		TipOptions().BkColor = dlg.GetColor();
+}
+
+
+void CSettingsDlg::OnBnClickedTipTextColor()
+{
+	CMFCColorDialog dlg(TipOptions().TextColor, 0, this);
+	if (IDOK == dlg.DoModal())
+		TipOptions().TextColor = dlg.GetColor();
+}
+
+CaretTipOptions& CSettingsDlg::TipOptions()
+{
+	CString language;
+	c_language.GetLBText(c_language.GetCurSel(), language);
+	return m_caretTips.at((LPCSTR)CStringA(language));
+}
+
+void CSettingsDlg::OnCbnSelchangeLanguage()
+{
+	c_showLanguageTip.SetCheck(TipOptions().ShowTip ? BST_CHECKED : BST_UNCHECKED);
 }

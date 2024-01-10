@@ -74,7 +74,6 @@ BEGIN_MESSAGE_MAP(CKeyFixDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_HOTKEY()
 	ON_WM_CREATE()
-	ON_WM_TIMER()
 	ON_BN_CLICKED(IDOK, &CKeyFixDlg::OnBnClickedOk)
 	ON_CBN_SELENDOK(IDC_LAYOUT_FROM, &CKeyFixDlg::OnCbnSelendokLayoutFrom)
 	ON_CBN_SELENDOK(IDC_LAYOUT_TO, &CKeyFixDlg::OnCbnSelendokLayoutTo)
@@ -89,7 +88,67 @@ BEGIN_MESSAGE_MAP(CKeyFixDlg, CDialogEx)
 	ON_WM_WINDOWPOSCHANGING()
 	ON_COMMAND(IDM_ABOUT, &CKeyFixDlg::OnAbout)
 	ON_BN_CLICKED(IDC_CAPS_LOCK, &CKeyFixDlg::OnBnClickedCapsLock)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
+
+
+// Callback function that handles events.
+//
+
+void CALLBACK CKeyFixDlg::HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
+	LONG idObject, LONG idChild,
+	DWORD dwEventThread, DWORD dwmsEventTime)
+{
+	((CKeyFixDlg*)AfxGetApp()->m_pMainWnd)->OnWinEvent(hook, event, hwnd, idObject, idChild, dwEventThread, dwmsEventTime);
+}
+
+void CKeyFixDlg::OnWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
+	LONG idObject, LONG idChild,
+	DWORD dwEventThread, DWORD dwmsEventTime)
+{
+	if (idObject != OBJID_CARET)
+		return;
+
+	bool hide = true;
+
+	TRACE("* %x\n", event);
+
+	IAccessible* pAcc = NULL;
+	VARIANT varChild;
+
+	if (SUCCEEDED(AccessibleObjectFromEvent(hwnd, idObject, idChild, &pAcc, &varChild)))
+	{
+		switch (event)
+		{
+		case EVENT_OBJECT_LOCATIONCHANGE:
+		{
+			RECT rect;
+			if (SUCCEEDED(pAcc->accLocation(&rect.left, &rect.top, &rect.right, &rect.bottom, varChild)))
+			{
+				if (rect.right > 0 || rect.bottom > 0)
+				{
+					c_caretTip.SetText(GetActiveLanguageName(hwnd), RGB(0, 0, 0), RGB(255, 255, 0));
+					c_caretTip.SetWindowPos(&wndTopMost, rect.left + 10, rect.top + rect.bottom + 5, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOACTIVATE);
+					hide = false;
+				}
+			}
+			break;
+		}
+		case EVENT_OBJECT_DESTROY:
+		case EVENT_OBJECT_HIDE:
+		{
+			break;
+		}
+		default:
+			hide = false;
+		}
+
+		pAcc->Release();
+	}
+
+	//if (hide)
+		//c_caretTip.ShowWindow(SW_HIDE);
+}
 
 
 
@@ -155,6 +214,7 @@ BOOL CKeyFixDlg::OnInitDialog()
 	}
 
 	m_actions = m_settings.value("actions", m_actions);
+	m_caretTips = m_settings.value("tipOptions", m_caretTips);
 	RegisterHotKeys(m_actions);
 
 	CRect pos;
@@ -180,27 +240,44 @@ BOOL CKeyFixDlg::OnInitDialog()
 	m_fontBold.CreateFontIndirect(&lf);
 	c_replace.SetFont(&m_fontBold);
 
+	LPCTSTR clsName = AfxRegisterWndClass(0);
+
+	c_caretTip.CreateEx(WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_NOACTIVATE | WS_EX_TOPMOST,
+		clsName, _T("Custom Window"),
+		WS_POPUP,
+		CRect(),
+		GetDesktopWindow(), 0);
+	c_caretTip.SetLayeredWindowAttributes(0, 155, LWA_ALPHA);
+
+	SetTimer(1, 200, nullptr);
+
+	//m_hook = SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_LOCATIONCHANGE, NULL, HandleWinEvent, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+
 	return FALSE;  // return TRUE  unless you set the focus to a control
 }
+
+
+
+
 
 void CKeyFixDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	UINT id = nID & 0xFFF0;
 	switch (id)
 	{
-		case IDM_ABOUTBOX:
-		{
-			CAboutDlg dlgAbout;
-			dlgAbout.DoModal();
-		}
+	case IDM_ABOUTBOX:
+	{
+		CAboutDlg dlgAbout;
+		dlgAbout.DoModal();
+	}
+	break;
+
+	case IDM_EXIT:
+		OnCancel();
 		break;
 
-		case IDM_EXIT:
-			OnCancel();
-			break;
-
-		default:
-			CDialogEx::OnSysCommand(nID, lParam);
+	default:
+		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
 
@@ -446,6 +523,7 @@ void CKeyFixDlg::CreateTrayIcon()
 
 void CKeyFixDlg::DestroyTrayIcon()
 {
+	UnhookWinEvent(m_hook);
 	Shell_NotifyIcon(NIM_DELETE, &m_NID);
 }
 
@@ -619,13 +697,22 @@ void CKeyFixDlg::OnBnClickedSettings()
 {
 	CSettingsDlg dlg;
 	dlg.m_actions = m_actions;
+	dlg.m_caretTips = m_caretTips;
 	dlg.m_autoStart = m_settings.value("autoStart", true);
 
 	UnregisterHotKeys(m_actions);
 
+	for (auto& layout : m_layouts.Layouts())
+	{
+		std::string name = (LPCSTR)CStringA(GetLanguageName(layout.HKL));
+		if (dlg.m_caretTips.count(name) == 0)
+			dlg.m_caretTips[name] = CaretTipOptions();
+	}
+
 	if (dlg.DoModal() == IDOK)
 	{
 		m_actions = dlg.m_actions;
+		m_caretTips = dlg.m_caretTips;
 		m_settings["autoStart"] = dlg.m_autoStart != 0;
 
 		SaveSettings();
@@ -690,6 +777,7 @@ void CKeyFixDlg::ApplyAutoStart()
 void CKeyFixDlg::SaveSettings()
 {
 	m_settings["actions"] = m_actions;
+	m_settings["tipOptions"] = m_caretTips;
 
 	std::ofstream f(m_settingsPath.c_str());
 	f << m_settings;
@@ -720,3 +808,104 @@ void CKeyFixDlg::OnBnClickedCapsLock()
 	Translate();
 }
 
+
+
+void CKeyFixDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	CString tipText;
+
+	HKL activeLayout = 0;
+
+	CWnd* wnd = GetForegroundWindow();
+	if (wnd != nullptr)
+	{
+		RECT rect;
+		if (GetCaretPosition(wnd, rect))
+		{
+			tipText = GetActiveLanguageName(wnd->GetSafeHwnd());
+			c_caretTip.SetWindowPos(&wndTopMost, rect.left + 10, rect.bottom + 5, 0, 0, SWP_NOSIZE);
+		}
+	}
+
+	ShowLanguageTip(tipText);
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+bool CKeyFixDlg::GetCaretPosition(CWnd* wnd, RECT& rect)
+{
+	bool caretVisible = false;
+
+	IAccessible* currentObject = nullptr;
+
+	DWORD processId = GetWindowThreadProcessId(wnd->GetSafeHwnd(), nullptr);
+
+	GUITHREADINFO info;
+	info.cbSize = sizeof(GUITHREADINFO);
+	if (!GetGUIThreadInfo(processId, &info) || info.hwndFocus == NULL)
+		info.hwndFocus = wnd->GetSafeHwnd();
+
+	VARIANT varChildSelf;
+	varChildSelf.vt = VT_I4;
+	varChildSelf.lVal = CHILDID_SELF;
+
+	// Obtain the object ID of the focused element
+	if (AccessibleObjectFromWindow(info.hwndFocus, OBJID_CARET, IID_IAccessible, (void**)&currentObject) == S_OK)
+	{
+		VARIANT state;
+		if (SUCCEEDED(currentObject->get_accState(varChildSelf, &state)))
+		{
+			if ((state.lVal & STATE_SYSTEM_INVISIBLE) == 0)
+			{
+				if (SUCCEEDED(currentObject->accLocation(&rect.left, &rect.top, &rect.right, &rect.bottom, varChildSelf)))
+				{
+					caretVisible = rect.right > 0 && rect.bottom > 0;
+					rect.right += rect.left;
+					rect.bottom += rect.top;
+
+					//CString tmp;
+					//tmp.Format(L"State:%x [%d,%d,%d,%d]", state.lVal, rect.top, rect.left, rect.right, rect.bottom);
+					//OutputDebugStringW(tmp);
+				}
+			}
+		}
+
+		currentObject->Release();
+	}
+
+	return caretVisible;
+}
+
+
+CString CKeyFixDlg::GetActiveLanguageName(HWND wnd)
+{
+	DWORD threadId = GetWindowThreadProcessId(wnd, nullptr);
+	HKL activeLayout = GetKeyboardLayout(threadId);
+	return GetLanguageName(activeLayout);
+}
+
+CString CKeyFixDlg::GetLanguageName(HKL layout)
+{
+	TCHAR buf[20] = { 0 };
+	WORD languageId = LOWORD(layout);
+	GetLocaleInfo(languageId, LOCALE_SISO639LANGNAME, buf, _countof(buf));
+	return buf;
+}
+
+
+
+void CKeyFixDlg::ShowLanguageTip(CString name)
+{
+	if (!name.IsEmpty())
+	{
+		CaretTipOptions& tipOptions = m_caretTips[(LPCSTR)CStringA(name)];
+		if (tipOptions.ShowTip)
+		{
+			c_caretTip.SetText(name, tipOptions.TextColor, tipOptions.BkColor);
+			c_caretTip.ShowWindow(SW_SHOW);
+			return;
+		}
+	}
+
+	c_caretTip.ShowWindow(SW_HIDE);
+}

@@ -24,6 +24,7 @@ SOFTWARE
 #include "afxdialogex.h"
 
 #include "ActionOptions.h"
+#include "CaretTipOptions.h"
 #include <map>
 
 
@@ -45,10 +46,13 @@ protected:
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
+	CaretTipOptions& TipOptions();
+
 	DECLARE_MESSAGE_MAP()
 public:
 
 	std::map<int, ActionOptions> m_actions;
+	std::map<std::string, CaretTipOptions> m_caretTips;
 
 	CHotKeyCtrl c_hotkeyQuick;
 	virtual BOOL OnInitDialog();
@@ -56,4 +60,10 @@ public:
 	CHotKeyCtrl c_hotkeyOpen;
 	BOOL m_autoStart;
 	CHotKeyCtrl c_hotkeyCapsLock;
+	afx_msg void OnBnClickedShowCaretTip();
+	CComboBox c_language;
+	afx_msg void OnBnClickedTipBkColor();
+	afx_msg void OnBnClickedTipTextColor();
+	CButton c_showLanguageTip;
+	afx_msg void OnCbnSelchangeLanguage();
 };

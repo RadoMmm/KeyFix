@@ -24,6 +24,8 @@ SOFTWARE
 
 #include "KeyboardLayouts.h"
 #include "ActionOptions.h"
+#include "CaretTipOptions.h"
+#include "TipWnd.h"
 
 #include <nlohmann/json.hpp>
 
@@ -60,6 +62,15 @@ public:
 private:
 	bool m_startHidden = true;
 
+	static void CALLBACK HandleWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
+		LONG idObject, LONG idChild,
+		DWORD dwEventThread, DWORD dwmsEventTime);
+	HWINEVENTHOOK m_hook;	
+	void OnWinEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd,
+		LONG idObject, LONG idChild,
+		DWORD dwEventThread, DWORD dwmsEventTime);
+
+
 	KeyboardLayouts m_layouts;
 
 	std::vector<std::pair<LayoutInfo, LayoutInfo>> m_translations;
@@ -93,7 +104,7 @@ private:
 	void Translate();
 
 	std::map<int, ActionOptions> m_actions;
-
+	std::map<std::string, CaretTipOptions> m_caretTips;
 
 	bool RegisterHotKeys(const std::map<int, ActionOptions>& actions);
 	void UnregisterHotKeys(const std::map<int, ActionOptions>& actions);
@@ -105,6 +116,8 @@ private:
 	void HideWindow();
 
 	void ApplyAutoStart();
+
+	CTipWnd c_caretTip;	
 
 public:
 
@@ -131,4 +144,9 @@ public:
 	afx_msg void OnAbout();
 	afx_msg void OnBnClickedCapsLock();
 	CButton c_capsLock;
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	bool GetCaretPosition(CWnd* wnd, RECT& rect);
+	CString GetActiveLanguageName(HWND wnd);
+	CString GetLanguageName(HKL layout);
+	void ShowLanguageTip(CString name);
 };
