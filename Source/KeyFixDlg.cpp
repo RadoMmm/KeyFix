@@ -37,6 +37,8 @@ SOFTWARE
 
 #include "Clipboard.h"
 
+#import <oleacc.dll>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -836,7 +838,6 @@ bool CKeyFixDlg::GetCaretPosition(CWnd* wnd, RECT& rect)
 {
 	bool caretVisible = false;
 
-	IAccessible* currentObject = nullptr;
 
 	DWORD processId = GetWindowThreadProcessId(wnd->GetSafeHwnd(), nullptr);
 
@@ -849,28 +850,45 @@ bool CKeyFixDlg::GetCaretPosition(CWnd* wnd, RECT& rect)
 	varChildSelf.vt = VT_I4;
 	varChildSelf.lVal = CHILDID_SELF;
 
+	IAccessiblePtr caretObject;
+
 	// Obtain the object ID of the focused element
-	if (AccessibleObjectFromWindow(info.hwndFocus, OBJID_CARET, IID_IAccessible, (void**)&currentObject) == S_OK)
+	if (SUCCEEDED(AccessibleObjectFromWindow(info.hwndFocus, OBJID_CARET, IID_IAccessible, (void**)&caretObject)))
 	{
 		VARIANT state;
-		if (SUCCEEDED(currentObject->get_accState(varChildSelf, &state)))
+		if (SUCCEEDED(caretObject->get_accState(varChildSelf, &state)))
 		{
 			if ((state.lVal & STATE_SYSTEM_INVISIBLE) == 0)
 			{
-				if (SUCCEEDED(currentObject->accLocation(&rect.left, &rect.top, &rect.right, &rect.bottom, varChildSelf)))
+				if (SUCCEEDED(caretObject->accLocation(&rect.left, &rect.top, &rect.right, &rect.bottom, varChildSelf)))
 				{
 					caretVisible = rect.right > 0 && rect.bottom > 0;
 					rect.right += rect.left;
 					rect.bottom += rect.top;
-
-					//CString tmp;
-					//tmp.Format(L"State:%x [%d,%d,%d,%d]", state.lVal, rect.top, rect.left, rect.right, rect.bottom);
-					//OutputDebugStringW(tmp);
+				}
+			}
+			else
+			{
+				IAccessiblePtr windowObj;
+				if (AccessibleObjectFromWindow(info.hwndFocus, OBJID_WINDOW, IID_IAccessible, (void**)&windowObj) == S_OK)
+				{
+					TCHAR cname[100] = { 0 };
+					GetClassName(info.hwndFocus, cname, _countof(cname));
+					if (CString(cname) == L"Credential Dialog Xaml Host")
+					{
+						long width, height;
+						if (SUCCEEDED(windowObj->accLocation(&rect.left, &rect.top, &width, &height, varChildSelf)))
+						{
+							caretVisible = width > 0 && height > 0;
+							rect.right = rect.left + width / 2;
+							rect.bottom = rect.top + height / 2;
+							rect.left = rect.right - 1;
+							rect.top = rect.bottom - 1;
+						}
+					}
 				}
 			}
 		}
-
-		currentObject->Release();
 	}
 
 	return caretVisible;
