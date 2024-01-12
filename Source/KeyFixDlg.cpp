@@ -821,10 +821,18 @@ void CKeyFixDlg::OnTimer(UINT_PTR nIDEvent)
 	CWnd* wnd = GetForegroundWindow();
 	if (wnd != nullptr)
 	{
+		DWORD processId = GetWindowThreadProcessId(wnd->GetSafeHwnd(), nullptr);
+
+		GUITHREADINFO info = { 0 };
+		info.cbSize = sizeof(GUITHREADINFO);
+
+		if (!GetGUIThreadInfo(processId, &info) || info.hwndFocus == NULL)
+			info.hwndFocus = wnd->GetSafeHwnd();
+
 		RECT rect;
-		if (GetCaretPosition(wnd, rect))
+		if (GetCaretPosition(info.hwndFocus, rect))
 		{
-			tipText = GetActiveLanguageName(wnd->GetSafeHwnd());
+			tipText = GetActiveLanguageName(info.hwndFocus);
 			c_caretTip.SetWindowPos(&wndTopMost, rect.left + 10, rect.bottom + 5, 0, 0, SWP_NOSIZE);
 		}
 	}
@@ -834,17 +842,9 @@ void CKeyFixDlg::OnTimer(UINT_PTR nIDEvent)
 	CDialogEx::OnTimer(nIDEvent);
 }
 
-bool CKeyFixDlg::GetCaretPosition(CWnd* wnd, RECT& rect)
+bool CKeyFixDlg::GetCaretPosition(HWND hwnd, RECT& rect)
 {
 	bool caretVisible = false;
-
-
-	DWORD processId = GetWindowThreadProcessId(wnd->GetSafeHwnd(), nullptr);
-
-	GUITHREADINFO info;
-	info.cbSize = sizeof(GUITHREADINFO);
-	if (!GetGUIThreadInfo(processId, &info) || info.hwndFocus == NULL)
-		info.hwndFocus = wnd->GetSafeHwnd();
 
 	VARIANT varChildSelf;
 	varChildSelf.vt = VT_I4;
@@ -853,7 +853,7 @@ bool CKeyFixDlg::GetCaretPosition(CWnd* wnd, RECT& rect)
 	IAccessiblePtr caretObject;
 
 	// Obtain the object ID of the focused element
-	if (SUCCEEDED(AccessibleObjectFromWindow(info.hwndFocus, OBJID_CARET, IID_IAccessible, (void**)&caretObject)))
+	if (SUCCEEDED(AccessibleObjectFromWindow(hwnd, OBJID_CARET, IID_IAccessible, (void**)&caretObject)))
 	{
 		VARIANT state;
 		if (SUCCEEDED(caretObject->get_accState(varChildSelf, &state)))
@@ -870,10 +870,10 @@ bool CKeyFixDlg::GetCaretPosition(CWnd* wnd, RECT& rect)
 			else
 			{
 				IAccessiblePtr windowObj;
-				if (AccessibleObjectFromWindow(info.hwndFocus, OBJID_WINDOW, IID_IAccessible, (void**)&windowObj) == S_OK)
+				if (AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible, (void**)&windowObj) == S_OK)
 				{
 					TCHAR cname[100] = { 0 };
-					GetClassName(info.hwndFocus, cname, _countof(cname));
+					GetClassName(hwnd, cname, _countof(cname));
 					if (CString(cname) == L"Credential Dialog Xaml Host")
 					{
 						long width, height;

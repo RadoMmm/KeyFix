@@ -145,7 +145,7 @@ public:
 	afx_msg void OnBnClickedCapsLock();
 	CButton c_capsLock;
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	bool GetCaretPosition(CWnd* wnd, RECT& rect);
+	bool GetCaretPosition(HWND hwnd, RECT& rect);
 	CString GetActiveLanguageName(HWND wnd);
 	CString GetLanguageName(HKL layout);
 	void ShowLanguageTip(CString name);
